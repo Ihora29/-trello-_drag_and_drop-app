@@ -1,8 +1,11 @@
+/* main.css */
 body {
     background: #f4f5f7;
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .board {
@@ -12,43 +15,61 @@ body {
     gap: 20px;
 }
 
+/* Column */
 .column {
     background: #ebecf0;
     padding: 15px;
     border-radius: 10px;
-    width: 250px;
-    min-height: 400px;
+    width: 300px;
+    min-height: 420px;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
 }
 
 .column h2 {
     text-align: center;
     color: #333;
+    margin: 0 0 12px 0;
 }
 
+/* Tasks container */
 .tasks {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow-y: auto;
+    padding-right: 6px;
 }
 
+/* Individual task */
 .task {
     background: white;
-    padding: 10px 35px 10px 10px;
-
+    padding: 10px 40px 10px 10px;
     border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     cursor: grab;
     position: relative;
+    word-break: break-word;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
 }
 
+/* text inside task */
+.task .task-text {
+    display: inline-block;
+    flex: 1;
+    padding-right: 6px;
+}
+
+/* dragging state */
 .task.dragging {
     opacity: 0.5;
 }
 
-
+/* delete button */
 .delete-btn {
     position: absolute;
     right: 8px;
@@ -58,13 +79,16 @@ body {
     color: #888;
     font-size: 14px;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color 0.15s;
+    line-height: 1;
+    padding: 2px 6px;
 }
 
 .delete-btn:hover {
     color: red;
 }
 
+/* add button */
 .add-btn {
     margin-top: 10px;
     background: #5aac44;
@@ -73,12 +97,65 @@ body {
     padding: 8px;
     border-radius: 6px;
     cursor: pointer;
+    font-weight: 600;
 }
 
 .add-btn:hover {
     background: #519839;
 }
 
+/* drop target style */
 .column.drag-over {
     background: #d4f7d0;
+}
+
+/* scrollbar small styling for tasks area */
+.tasks::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tasks::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+}
+
+/* Responsive: mobile */
+@media (max-width: 600px) {
+    body {
+        padding: 12px;
+    }
+
+    .board {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .column {
+        width: 100%;
+        min-height: 200px;
+        padding: 12px;
+    }
+
+    .task {
+        padding: 8px 36px 8px 8px;
+        font-size: 14px;
+        min-height: 44px;
+    }
+
+    .column h2 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .add-btn {
+        padding: 10px;
+        font-size: 15px;
+    }
+
+    .delete-btn {
+        right: 6px;
+        top: 6px;
+        font-size: 13px;
+    }
 }

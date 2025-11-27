@@ -1,14 +1,16 @@
+
 const columns = document.querySelectorAll('.tasks');
 const addButtons = document.querySelectorAll('.add-btn');
 let draggedTask = null;
 
-
 loadBoard();
 
+document.querySelectorAll('.task').forEach(task => {
+    addDeleteButton(task);
+    attachDragToTask(task);
+});
 
-document.querySelectorAll('.task').forEach(addDeleteButton);
-
-
+// --- Drag & drop ---
 document.addEventListener('dragstart', e => {
     if (e.target.classList.contains('task')) {
         draggedTask = e.target;
@@ -34,7 +36,7 @@ columns.forEach(column => {
         column.parentElement.classList.remove('drag-over');
     });
 
-    column.addEventListener('drop', () => {
+    column.addEventListener('drop', e => {
         column.parentElement.classList.remove('drag-over');
         if (draggedTask) {
             column.appendChild(draggedTask);
@@ -43,30 +45,60 @@ columns.forEach(column => {
     });
 });
 
-
 addButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-        const taskText = prompt('Enter new task:');
-        if (taskText) {
-            const newTask = createTask(taskText);
-            btn.previousElementSibling.appendChild(newTask);
-            saveBoard();
+        while (true) {
+            const taskText = prompt('Enter new task (max 30 characters)');
+            if (taskText === null) {
+                return;
+            }
+
+            const trimmed = taskText.trim();
+
+            if (trimmed.length === 0) {
+                alert('Завдання не може бути лише з пробілів. Спробуйте ще раз або натисніть Cancel.');
+                continue;
+            }
+
+            if (trimmed.length > 30) {
+                alert(`Забагато довго — максимум 30 символів. Наразі: ${trimmed.length}`);
+                continue;
+            }
+
+            const newTask = createTask(trimmed);
+            if (newTask) {
+                const tasksContainer = btn.previousElementSibling;
+                tasksContainer.appendChild(newTask);
+                saveBoard();
+            }
+            break;
         }
     });
 });
 
 
 function createTask(text) {
+    if (!text || text.trim() === '') return null;
+
     const task = document.createElement('div');
     task.classList.add('task');
-    task.textContent = text;
     task.setAttribute('draggable', 'true');
+
+    const span = document.createElement('span');
+    span.classList.add('task-text');
+    span.textContent = text;
+    task.appendChild(span);
+
     addDeleteButton(task);
+    attachDragToTask(task);
+
     return task;
 }
 
-
 function addDeleteButton(task) {
+
+    if (task.querySelector('.delete-btn')) return;
+
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = '✕';
     deleteBtn.classList.add('delete-btn');
@@ -74,8 +106,24 @@ function addDeleteButton(task) {
 
     deleteBtn.addEventListener('click', e => {
         e.stopPropagation();
-        task.remove();
-        saveBoard();
+
+        const parent = task.parentElement;
+        if (parent) {
+            task.remove();
+            saveBoard();
+        }
+    });
+}
+
+function attachDragToTask(task) {
+
+    task.setAttribute('draggable', 'true');
+
+    task.addEventListener('mousedown', () => {
+        task.style.userSelect = 'none';
+    });
+    task.addEventListener('mouseup', () => {
+        task.style.userSelect = '';
     });
 }
 
@@ -84,13 +132,15 @@ function saveBoard() {
 
     columns.forEach(column => {
         const columnId = column.parentElement.id;
-        const tasks = Array.from(column.querySelectorAll('.task')).map(task => task.firstChild.textContent.trim());
+        const tasks = Array.from(column.querySelectorAll('.task')).map(task => {
+            const t = task.querySelector('.task-text');
+            return t ? t.textContent.trim() : '';
+        }).filter(Boolean);
         boardData[columnId] = tasks;
     });
 
     localStorage.setItem('trelloBoard', JSON.stringify(boardData));
 }
-
 
 function loadBoard() {
     const saved = localStorage.getItem('trelloBoard');
@@ -100,10 +150,11 @@ function loadBoard() {
 
     Object.keys(boardData).forEach(columnId => {
         const column = document.querySelector(`#${columnId} .tasks`);
+        if (!column) return;
         column.innerHTML = '';
         boardData[columnId].forEach(taskText => {
             const task = createTask(taskText);
-            column.appendChild(task);
+            if (task) column.appendChild(task);
         });
     });
 }
