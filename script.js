@@ -2,7 +2,7 @@
 const columns = document.querySelectorAll('.tasks');
 const addButtons = document.querySelectorAll('.add-btn');
 let draggedTask = null;
-
+const englishRegex = /^[A-Za-z0-9\s\.,!?:;'"()\-\_\/&@#\$%]+$/;
 loadBoard();
 
 document.querySelectorAll('.task').forEach(task => {
@@ -60,6 +60,11 @@ addButtons.forEach(btn => {
                 continue;
             }
 
+            if (!englishRegex.test(trimmed)) {
+                alert('Вводьте, будь ласка, ТІЛЬКИ англійські символи (A–Z) та стандартну пунктуацію.');
+                continue;
+            }
+
             if (trimmed.length > 30) {
                 alert(`Забагато довго — максимум 30 символів. Наразі: ${trimmed.length}`);
                 continue;
@@ -79,6 +84,11 @@ addButtons.forEach(btn => {
 
 function createTask(text) {
     if (!text || text.trim() === '') return null;
+
+    if (!englishRegex.test(text)) {
+        console.warn('Task contains disallowed characters, skipping creation:', text);
+        return null;
+    }
 
     const task = document.createElement('div');
     task.classList.add('task');
